@@ -1,0 +1,88 @@
+mql5
+//+------------------------------------------------------------------+
+//|                                                Einstein Albert EA |
+//|                              © forexroboteasy.com, Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+
+// Indicator Inputs
+input int FastMA_Period = 10; // Fast Moving Average Period
+input int SlowMA_Period = 20; // Slow Moving Average Period
+input int RSI_Period = 14; // RSI Period
+input double RSI_Overbought_Level = 70; // RSI Overbought Level
+input double RSI_Oversold_Level = 30; // RSI Oversold Level
+
+//+------------------------------------------------------------------+
+//| Expert initialization function                                   |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   // Add initializations here
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Expert deinitialization function                                 |
+//+------------------------------------------------------------------+
+void OnDeinit(const int reason)
+{
+   // Add deinitializations here
+}
+
+//+------------------------------------------------------------------+
+//| Expert tick function                                             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // Get current market data
+   double currentPrice = MarketInfo(Symbol(), MODE_BID);
+
+   // Calculate Fast and Slow Moving Averages
+   double fastMA = iMA(Symbol(), PERIOD_CURRENT, FastMA_Period, 0, MODE_EMA, PRICE_CLOSE, 0);
+   double slowMA = iMA(Symbol(), PERIOD_CURRENT, SlowMA_Period, 0, MODE_EMA, PRICE_CLOSE, 0);
+
+   // Calculate RSI
+   double rsi = iRSI(Symbol(), PERIOD_CURRENT, RSI_Period, PRICE_CLOSE, 0);
+
+   // Check for trading conditions
+   if (fastMA > slowMA && rsi > RSI_Overbought_Level)
+   {
+      // Execute buy trade
+      double stopLoss = currentPrice - 0.01;
+      double takeProfit = currentPrice + 0.02;
+      int ticket = OrderSend(Symbol(), OP_BUY, 0.1, currentPrice, 3, stopLoss, takeProfit, 'Buy order', 0, 0, Green);
+      if (ticket > 0)
+      {
+         // Trade executed successfully
+         Print('Buy order executed at price ', currentPrice);
+      }
+      else
+      {
+         // Trade execution failed
+         Print('Buy order failed with error code ', GetLastError());
+      }
+   }
+   else if (fastMA < slowMA && rsi < RSI_Oversold_Level)
+   {
+      // Execute sell trade
+      double stopLoss = currentPrice + 0.01;
+      double takeProfit = currentPrice - 0.02;
+      int ticket = OrderSend(Symbol(), OP_SELL, 0.1, currentPrice, 3, stopLoss, takeProfit, 'Sell order', 0, 0, Red);
+      if (ticket > 0)
+      {
+         // Trade executed successfully
+         Print('Sell order executed at price ', currentPrice);
+      }
+      else
+      {
+         // Trade execution failed
+         Print('Sell order failed with error code ', GetLastError());
+      }
+   }
+   else
+   {
+      // No trading condition met
+      Print('No trading condition met');
+   }
+}
+
+//+------------------------------------------------------------------+
